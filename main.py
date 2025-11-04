@@ -11,7 +11,7 @@ api_hash = '73746434553a3b392291b51a49cd41fc'
 
 async def update_time():
     try:
-        print("🟢 Starting Telegram Live Clock with Rotating Stickers...")
+        print("🟢 Starting Telegram Live Clock with Stickers in Name...")
         
         async with TelegramClient('session_name', api_id, api_hash) as client:
             print("✅ Connected to Telegram successfully!")
@@ -33,24 +33,37 @@ async def update_time():
                     # انتخاب استیکر فعلی
                     current_sticker = stickers[sticker_index]
                     
-                    # به روزرسانی نام پروفایل
+                    # ترکیب زمان و استیکر در نام اصلی
+                    display_name = f"{current_time} {current_sticker}"
+                    
+                    # به روزرسانی نام پروفایل (استیکر در نام اصلی)
                     await client(UpdateProfileRequest(
-                        first_name=current_time,
-                        last_name=current_sticker
+                        first_name=display_name,
+                        last_name=""  # نام خانوادگی خالی
                     ))
                     
                     update_count += 1
-                    print(f'✅ #{update_count} Updated to: {current_time} {current_sticker}')
+                    print(f'✅ #{update_count} Updated to: {display_name}')
                     
                     # تغییر به استیکر بعدی برای دفعه بعد
                     sticker_index = (sticker_index + 1) % len(stickers)
                     
-                    # انتظار ۶۰ ثانیه (همزمان با تغییر زمان)
+                    # بررسی وضعیت فعلی پروفایل
+                    me = await client.get_me()
+                    print(f'📊 Current profile: "{me.first_name}"')
+                    
+                    # انتظار ۶۰ ثانیه
                     await asyncio.sleep(60)
                     
                 except Exception as e:
                     print(f'❌ Error: {e}')
-                    await asyncio.sleep(60)  # در صورت خطا هم ۶۰ ثانیه صبر کن
+                    
+                    # اگر خطای محدودیت داشت، زمان انتظار را افزایش بده
+                    if "FLOOD" in str(e) or "Too Many" in str(e):
+                        print("⚠️ Flood limit detected, waiting 2 minutes...")
+                        await asyncio.sleep(120)
+                    else:
+                        await asyncio.sleep(60)
                     
     except Exception as e:
         print(f'🚨 Critical Error: {e}')
