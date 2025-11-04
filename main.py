@@ -20,6 +20,9 @@ async def update_time():
             stickers = ["🏓🥇", "🏓🥈", "🏓🥉"]
             sticker_index = 0
             
+            # شمارنده برای ردیابی
+            update_count = 0
+            
             while True:
                 try:
                     # زمان ایران (UTC+3:30)
@@ -35,17 +38,19 @@ async def update_time():
                         first_name=current_time,
                         last_name=current_sticker
                     ))
-                    print(f'✅ Updated to: {current_time} {current_sticker}')
+                    
+                    update_count += 1
+                    print(f'✅ #{update_count} Updated to: {current_time} {current_sticker}')
                     
                     # تغییر به استیکر بعدی برای دفعه بعد
                     sticker_index = (sticker_index + 1) % len(stickers)
                     
-                    # انتظار ۶ ثانیه
-                    await asyncio.sleep(6)
+                    # انتظار ۶۰ ثانیه (همزمان با تغییر زمان)
+                    await asyncio.sleep(60)
                     
                 except Exception as e:
                     print(f'❌ Error: {e}')
-                    await asyncio.sleep(6)  # در صورت خطا هم ۶ ثانیه صبر کن
+                    await asyncio.sleep(60)  # در صورت خطا هم ۶۰ ثانیه صبر کن
                     
     except Exception as e:
         print(f'🚨 Critical Error: {e}')
