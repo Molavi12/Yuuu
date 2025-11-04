@@ -11,21 +11,14 @@ api_hash = '73746434553a3b392291b51a49cd41fc'
 
 async def update_time():
     try:
-        print("🟢 Starting Telegram Live Clock...")
-        print("📁 Checking session file...")
-        
-        # بررسی وجود فایل session
-        if not os.path.exists('session_name.session'):
-            print("❌ Session file not found!")
-            print("📂 Files in directory:")
-            for file in os.listdir('.'):
-                print(f"   - {file}")
-            return
-        
-        print("✅ Session file found")
+        print("🟢 Starting Telegram Live Clock with Rotating Stickers...")
         
         async with TelegramClient('session_name', api_id, api_hash) as client:
             print("✅ Connected to Telegram successfully!")
+            
+            # لیست استیکرها به ترتیب چرخش
+            stickers = ["🏓🥇", "🏓🥈", "🏓🥉"]
+            sticker_index = 0
             
             while True:
                 try:
@@ -34,18 +27,25 @@ async def update_time():
                     iran_time = utc_time + timedelta(hours=3, minutes=30)
                     current_time = iran_time.strftime('%H:%M')
                     
+                    # انتخاب استیکر فعلی
+                    current_sticker = stickers[sticker_index]
+                    
                     # به روزرسانی نام پروفایل
                     await client(UpdateProfileRequest(
                         first_name=current_time,
-                        last_name=''
+                        last_name=current_sticker
                     ))
-                    print(f'✅ Updated to: {current_time} (Iran Time)')
+                    print(f'✅ Updated to: {current_time} {current_sticker}')
                     
-                    await asyncio.sleep(60)
+                    # تغییر به استیکر بعدی برای دفعه بعد
+                    sticker_index = (sticker_index + 1) % len(stickers)
+                    
+                    # انتظار ۶ ثانیه
+                    await asyncio.sleep(6)
                     
                 except Exception as e:
-                    print(f'❌ Update Error: {e}')
-                    await asyncio.sleep(30)
+                    print(f'❌ Error: {e}')
+                    await asyncio.sleep(6)  # در صورت خطا هم ۶ ثانیه صبر کن
                     
     except Exception as e:
         print(f'🚨 Critical Error: {e}')
