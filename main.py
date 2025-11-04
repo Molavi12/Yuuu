@@ -11,64 +11,52 @@ api_hash = '73746434553a3b392291b51a49cd41fc'
 
 async def update_time():
     try:
-        print("🟢 Starting Telegram Live Clock with Stickers in Name...")
+        print("🟢 Starting Telegram Live Clock...")
         
-        async with TelegramClient('session_name', api_id, api_hash) as client:
+        # استفاده از session جدید
+        async with TelegramClient('new_session', api_id, api_hash) as client:
             print("✅ Connected to Telegram successfully!")
             
-            # لیست استیکرها به ترتیب چرخش
             stickers = ["🏓🥇", "🏓🥈", "🏓🥉"]
             sticker_index = 0
             
-            # شمارنده برای ردیابی
-            update_count = 0
-            
             while True:
                 try:
-                    # زمان ایران (UTC+3:30)
+                    # زمان ایران
                     utc_time = datetime.utcnow()
                     iran_time = utc_time + timedelta(hours=3, minutes=30)
                     current_time = iran_time.strftime('%H:%M')
-                    
-                    # انتخاب استیکر فعلی
                     current_sticker = stickers[sticker_index]
                     
-                    # ترکیب زمان و استیکر در نام اصلی
                     display_name = f"{current_time} {current_sticker}"
                     
-                    # به روزرسانی نام پروفایل (استیکر در نام اصلی)
+                    print(f"🔄 Updating to: {display_name}")
+                    
+                    # به روزرسانی پروفایل
                     await client(UpdateProfileRequest(
                         first_name=display_name,
-                        last_name=""  # نام خانوادگی خالی
+                        last_name=""
                     ))
                     
-                    update_count += 1
-                    print(f'✅ #{update_count} Updated to: {display_name}')
+                    print(f'✅ Updated: {display_name}')
                     
-                    # تغییر به استیکر بعدی برای دفعه بعد
+                    # تغییر استیکر
                     sticker_index = (sticker_index + 1) % len(stickers)
                     
-                    # بررسی وضعیت فعلی پروفایل
-                    me = await client.get_me()
-                    print(f'📊 Current profile: "{me.first_name}"')
-                    
-                    # انتظار ۶۰ ثانیه
-                    await asyncio.sleep(60)
+                    # انتظار ۲ دقیقه
+                    await asyncio.sleep(120)
                     
                 except Exception as e:
                     print(f'❌ Error: {e}')
-                    
-                    # اگر خطای محدودیت داشت، زمان انتظار را افزایش بده
-                    if "FLOOD" in str(e) or "Too Many" in str(e):
-                        print("⚠️ Flood limit detected, waiting 2 minutes...")
-                        await asyncio.sleep(120)
-                    else:
-                        await asyncio.sleep(60)
+                    await asyncio.sleep(120)
                     
     except Exception as e:
         print(f'🚨 Critical Error: {e}')
+        # اگر session مشکل داشت، فایل session را پاک کن
+        if os.path.exists('new_session.session'):
+            os.remove('new_session.session')
+            print("🗑️ Corrupted session file deleted")
         sys.exit(1)
 
-# اجرای برنامه
 if __name__ == "__main__":
     asyncio.run(update_time())
